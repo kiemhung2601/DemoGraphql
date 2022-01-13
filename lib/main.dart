@@ -1,12 +1,34 @@
 import 'package:demographql/components/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:demographql/api.dart';
 
-
+const products = """
+query products{
+  products(first: 5, channel: "default-channel"){
+  edges {
+      node {
+        id
+        name
+        description
+      }
+    }
+  }
+}
+""";
 
 void main() {
-  runApp(const MyApp());
+  final HttpLink httpLink = HttpLink("https://demo.saleor.io/graphql/");
+
+  ValueNotifier<GraphQLClient> client = ValueNotifier(
+    GraphQLClient(
+      link: httpLink,
+      cache: GraphQLCache(store: InMemoryStore()),
+    ),
+  );
+
+  var app = GraphQLProvider(client: client, child: const MyApp());
+
+  runApp(app);
 }
 
 class MyApp extends StatelessWidget {
@@ -15,16 +37,13 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return GraphQLProvider(
-      client: client,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Demo Graphql',
-        theme: ThemeData(
-          scaffoldBackgroundColor: Colors.white,
-        ),
-        home: const HomeScreen(),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Demo Graphql',
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
       ),
+      home: const HomeScreen(),
     );
   }
 }
